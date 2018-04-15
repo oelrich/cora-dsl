@@ -14,5 +14,6 @@
  ((name corabase)
   (libraries (atdgen yojson))
   (preprocess (pps (ppx_jane ppx_expect ppx_driver.runner)))
-  (inline_tests)
- ))
+  (inline_tests ((deps (test_data/test.json))))
+ )
+)
