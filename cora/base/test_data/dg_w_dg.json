@@ -3,11 +3,9 @@
         {
             "children": [],
             "name": "dg_child",
-            "attributes": [
-                {
+            "attributes": {
                     "testing": "attributes"
                 }
-            ]
         },
         {
             "value": "bob",
