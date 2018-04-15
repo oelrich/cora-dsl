@@ -1,11 +1,10 @@
 open Cora_j
 open Cora_t
-open Attribute
 open CoraBase
 
 let check_cora_attributes = function
     | None -> None
-    | Some(caul:Cora_t.attribute list) ->
+    | Some(caul:Cora_t.attributes) ->
         Some(List.map
                 (fun (key,value) -> {key = key; value = value})
                 caul)
