@@ -23,6 +23,29 @@ let increase (key: string) (counter: string_counter) =
     else
         StringMap.add key 1L counter
 
+let get_jsons_from_dir dir =
+    Sys.readdir dir
+    |> Array.to_list
+    |> List.filter
+        (fun s -> Str.string_match (Str.regexp "^.+\\.json$") s 0)
+    |> List.map (fun s -> String.concat "/" [dir; s])
+
+let rec load = function
+    | [] -> []
+    | file::rest ->
+        cora_of_json file :: load rest
+
+let load_json dir =
+    get_jsons_from_dir dir
+    |> load
+
+let rec summarise elements counter counts =
+    match elements with
+    | [] ->
+        counts
+    | element :: rest ->
+        summarise rest counter (counter element counts)
+
 let rec count_names (c:cora) (names: string_counter) =
     match c with
     | Atomic(name, _) ->
@@ -30,6 +53,9 @@ let rec count_names (c:cora) (names: string_counter) =
     | Group(name, group) ->
         let updated_counter = increase name.name names in
         List.fold_left (fun nc c -> count_names c nc) updated_counter group.children
+
+let summarise_names coras =
+    summarise coras count_names StringMap.empty
 
 let rec count_attributes (c:cora) (attribute_counts: string_counter) =
     match c with
@@ -51,32 +77,10 @@ let rec count_attributes (c:cora) (attribute_counts: string_counter) =
             updated_counter
             group.children
 
+let summarise_attributes coras =
+    summarise coras count_attributes StringMap.empty
 
-let rec summarise
-        files
-        (counter: cora -> string_counter -> string_counter)
-        (counts: string_counter) =
-    match files with
-    | [] -> counts
-    | file::rest ->
-        try
-            let c = cora_of_json file in
-            summarise rest counter (counter c counts)
-        with exn ->
-            print_string "failed reading: ";
-            print_string file;
-            print_newline ();
-            summarise rest counter counts
 
-let summarise_names files =
-    summarise files count_names StringMap.empty
-
-let get_jsons_from_dir dir =
-    Sys.readdir dir
-    |> Array.to_list
-    |> List.filter
-        (fun s -> Str.string_match (Str.regexp "^.+\\.json$") s 0)
-    |> List.map (fun s -> String.concat "/" [dir; s])
 
 let basico (c: cora) =
     print_string "names:"; print_newline ();
