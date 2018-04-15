@@ -1,0 +1,8 @@
+(jbuild_version 1)
+
+(library
+ ((name cora)
+  (libraries (corabase))
+  (preprocess (pps (ppx_jane ppx_expect ppx_driver.runner)))
+  (inline_tests)
+ ))

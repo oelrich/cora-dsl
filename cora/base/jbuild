@@ -1,0 +1,18 @@
+(jbuild_version 1)
+
+(rule
+ ((targets (Cora_j.ml Cora_j.mli))
+  (deps    (Cora.atd))
+  (action  (run atdgen -j -j-std ${^}))))
+
+(rule
+ ((targets (Cora_t.ml Cora_t.mli))
+  (deps    (Cora.atd))
+  (action  (run atdgen -t -j-std ${^}))))
+
+(library
+ ((name corabase)
+  (libraries (atdgen yojson))
+  (preprocess (pps (ppx_jane ppx_expect ppx_driver.runner)))
+  (inline_tests)
+ ))

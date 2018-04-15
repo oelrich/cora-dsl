@@ -1,0 +1,18 @@
+{
+    "children": [
+        {
+            "children": [],
+            "name": "dg_child",
+            "attributes": [
+                {
+                    "testing": "attributes"
+                }
+            ]
+        },
+        {
+            "value": "bob",
+            "name": "da_child"
+        }
+    ],
+    "name": "dg"
+}

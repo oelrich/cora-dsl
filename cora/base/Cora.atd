@@ -1,0 +1,9 @@
+type attribute <ocaml module="Attribute" t="attribute"> = abstract
+
+type cora_unchecked = {
+    name: string;
+    ?value: string option;
+    ?repeat_id: string option;
+    ?children: cora_unchecked list option;
+    ?attributes: attribute list option; 
+}
