@@ -14,6 +14,8 @@ Has a name, an optional repeat ID, an optional ***attribute*** list and a list o
 
 An ***attribute*** is a key-value-pair coded as '{"attribute_key": "attribute_value"}' in the Json.
 
+Apparently the ***attributes*** field is not a list ...
+
 The child list can be empty, but must be present in the Json.
 
 Each child is either a ***DataAtomic*** or a ***DataGroup***. If a child has a repeat ID that ID must be unique with respect to its siblings.
