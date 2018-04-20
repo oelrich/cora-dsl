@@ -235,6 +235,43 @@ let find (s:search) (c:cora) =
         | Some(c) -> [c]
         | None -> []
 
+
+let rec list_contains_atom n v = function
+    | Atomic({name=n'; _}, {value = v'}):: _ ->
+        n = n' && v = v'
+    | _::rest ->
+        list_contains_atom n v rest
+    | [] ->
+        false
+
+let match_record_info (id: string) = function
+    | Group({name="recordInfo";_}, {children = kids; _}) ->
+        list_contains_atom "id" id kids
+    | _ -> false
+
+let rec find_record (t:string) (a:string*string) (n:string) = function
+    | c::cl -> List.append
+            (if match_record t a n c then [c] else [])
+            (find_record t a n cl)
+    | [] -> []
+and match_record (t:string) ((k,v):string*string) (n:string)  = function
+    | Group({name=t; _},
+            {attributes=record_attributes; children = kids}) ->
+        List.exists (match_record_info n) kids
+    | _ -> false
+
+
+let rec flatten_cora = function
+    | Group(_, {children = kids; _}) :: rest -> kids :: flatten_cora rest
+    | _ :: rest -> flatten_cora rest
+    | [] -> []
+
+
+let load_flat_cora () =
+    load_json "../data/files" (Str.regexp ".+")
+    |> flatten_cora
+    |> List.concat
+
 (*
     | Parent of search
 
