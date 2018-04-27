@@ -1,6 +1,25 @@
 open Corabase.Types
 open CoraTypes
 
+(*
+    name
+        recordInfo
+            dataDivider -> system
+            id -> type & id
+*)
+
+let rec list_contains_data_divider (sys:string) (cl : cora list) =
+    match cl with
+    | Group({name="dataDivider"},{children=[
+            Atomic({name="linkedRecordType"},{value="system"});
+            Atomic({name="linkedRecordId"},{value=system})]}) :: rest
+    | Group({name="dataDivider"},{children=[
+            Atomic({name="linkedRecordId"},{value=system});
+            Atomic({name="linkedRecordType"},{value="system"})]}) :: rest ->
+        (String.equal system sys)
+    | _ :: rest -> list_contains_data_divider sys rest
+    | [] -> false
+
 let rec list_contains_atom n v = function
     | (Atomic({name=n'; _}, {value = v'}):cora):: _ ->
         n = n' && v = v'
@@ -9,25 +28,25 @@ let rec list_contains_atom n v = function
     | [] ->
         false
 
-let match_record_info (id: string) = function
+let match_record_info (sys:string) (id: string) = function
     | (Group({name="recordInfo";_}, {children = kids; _}):cora) ->
-        list_contains_atom "id" id kids
+        (list_contains_atom "id" id kids) && (list_contains_data_divider sys kids)
     | _ -> false
 
-let rec find_record (t:string) (n:string) = function
+let rec find_record (s: string) (t:string) (n:string) = function
     | c::cl ->
         List.append
-            (if match_record t n c then [c] else [])
-            (find_record t n cl)
+            (if match_record s t n c then [c] else [])
+            (find_record s t n cl)
     | [] -> []
-and match_record (t:string) (n:string)  = function
-    | (Group({name=nt; _},
-            {attributes=record_attributes; children = kids}):cora) ->
-        List.exists (match_record_info n) kids
+and match_record (sys:string) (ty:string) (id:string)  = function
+    | (Group({name=nt; _},{children = kids}):cora) ->
+        (String.equal nt ty) &&
+        (List.exists (match_record_info sys id) kids)
     | _ -> false
 
-let find ((t,n): string * string) coras =
-    let hit = find_record t n coras in
+let find ((s,t,n): string * string * string) coras =
+    let hit = find_record s t n coras in
     match List.length hit with
     | 1 -> List.hd hit
     | 0 -> failwith (Printf.sprintf ("Could not find %s: %s") t n)
@@ -47,10 +66,12 @@ let get_id : cora -> string * string = function
 
 
 module Struple = struct
-    type t = string * string
-    let compare (s0, s0') (s1, s1') =
+    type t = string * string * string
+    let compare (s0, s0', s0'') (s1, s1', s1'') =
         match Pervasives.compare s0 s1 with
-        | 0 -> Pervasives.compare s0' s1'
+        | 0 -> (match Pervasives.compare s0' s1' with
+                | 0 -> Pervasives.compare s0'' s1''
+                | c -> c)
         | c -> c
     
     let t_of_sexp tuple =
@@ -59,7 +80,21 @@ module Struple = struct
         Core.Tuple2.sexp_of_t Core.String.sexp_of_t Core.String.sexp_of_t tuple
 end
 
+module NamedEdge = struct
+    type t = string * Struple.t * Struple.t
+    let compare (l0, l1, l2) (r0, r1, r2) =
+        match Pervasives.compare l0 r0 with
+        | 0 -> (match Pervasives.compare l1 r1 with
+               | 0 -> Pervasives.compare l2 r2
+               | c -> c)
+        | c -> c
+end
+
+type named_struple = string * Struple.t
+
 module EdgeMap = Map.Make(Struple)
+
+module NamedEdgeSet = Set.Make(NamedEdge)
 
 module NodeSet = Set.Make(Struple)
 
@@ -79,50 +114,94 @@ let rec get_atom n = function
             get_atom n rest
     | _::rest ->
         get_atom n rest
-    | [] ->
-        None
+    | [] -> None
 
-(*
+let get_link : cora -> (string * (string * string)) option = function
+    | Group({name=name},{children=[
+            Atomic({name="linkedRecordType"},{value=target});
+            Atomic({name="linkedRecordId"},{value=id})]})
+    | Group({name=name},{children=[
+            Atomic({name="linkedRecordId"},{value=id});
+            Atomic({name="linkedRecordType"},{value=target})]}) ->
+        Some(name, (target, id))
+    |_ -> None
 
-let rec get_link_targets (cl: cora list) =
-    match cl with
+let rec get_system (c:cora) =
+    match c with
+    | Group({name="dataDivider"},{children=[
+            Atomic({name="linkedRecordType"},{value="system"});
+            Atomic({name="linkedRecordId"},{value=system})]})
+    | Group({name="dataDivider"},{children=[
+            Atomic({name="linkedRecordId"},{value=system});
+            Atomic({name="linkedRecordType"},{value="system"})]}) ->
+        Some(system)
+    | Group(_,{children=kids}) ->
+        let rec ff elms =
+            (match elms with
+            | [] -> None
+            | e :: rest ->
+                (match get_system e with
+                | Some(system) -> Some(system)
+                | None -> ff rest))
+            in
+        ff kids
+    |_ -> None
+
+let rec get_links (c : cora) =
+    match c with
+    | Atomic(_,_) -> []
+    | Group(_,{children = kids}) ->
+        (get_link c) :: List.concat(List.map get_links kids)
+
+let rec clean_list_of_opt = function
+    | Some(v) :: rest -> v :: clean_list_of_opt rest
+    | None :: rest -> clean_list_of_opt rest
     | [] -> []
-    | Atomic(_,_) :: rest -> get_link_targets rest
-    | Group({name = name},{children = kids}) :: rest ->
 
-        match match_link c with
-        | Some(n,t,i) -> (n,t,i) :: get_link_targets rest
-
-
-let get_links ((t,i):string*string) world =
-    let c = find (t,i) world in
-
-
-    ["",""]
+let get_linking (c:cora) : (string * Struple.t) list =
+    match get_system c with
+    | Some(system) ->
+        List.map
+            (fun (name, (target, id)) -> (name, (system, target, id)))
+            (clean_list_of_opt (get_links c))
+    | None -> failwith "system not present"
 
 let rec get_graph
-        ((finished: Struple.t EdgeMap.t),
+        ((edges: NamedEdgeSet.t),
+        (finished: NodeSet.t),
         (fringe: NodeSet.t))
         (world: cora list) =
     match NodeSet.choose_opt fringe with
-    | Some(node) -> get_graph (visit node finished fringe world) world
-    | None -> finished
-and visit node (finished: Struple.t EdgeMap.t)
+    | Some(node) -> get_graph (visit edges node finished fringe world) world
+    | None -> edges
+and visit
+        edges
+        node
+        (finished: NodeSet.t)
         (fringe: NodeSet.t)
         (world: cora list) =
-    let linked_nodes = get_links node world in
+    let linked_nodes = get_linking (find node world) in
+    let new_edges =
+        List.fold_left (fun s (name, target) ->
+            NamedEdgeSet.add (name, node, target) s
+            ) edges linked_nodes
+        in
     let new_finished =
-        List.fold_left
-            (fun m target -> EdgeMap.add node target  m)
-            finished
-            linked_nodes
+        NodeSet.add node finished
         in
     let new_fringe =
-        List.fold_left (fun st el -> NodeSet.add el st) fringe linked_nodes
+        List.fold_left
+            (fun s (_, target) -> NodeSet.add target s)
+            (NodeSet.remove node fringe)
+            (List.filter (fun (_, e) -> not (NodeSet.mem e finished))
+                         linked_nodes)
         in
-    new_finished, new_fringe
+    new_edges, new_finished, new_fringe
 
-*)
+
+let graph_info (edges: NamedEdgeSet.t) = ()
+
+
 
 (*
     finished
