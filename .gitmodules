@@ -1,3 +1,4 @@
 [submodule "data"]
 	path = data
 	url = https://github.com/lsu-ub-uu/cora-basicstorage
+	branch = master
