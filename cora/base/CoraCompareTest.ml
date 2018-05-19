@@ -1,4 +1,4 @@
-open CoraBase
+open CoraBaseType
 open CoraCompare
 
 let%test "compare atomic rid <" =

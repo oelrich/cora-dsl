@@ -1,3 +1,3 @@
-module Types = Corabase__CoraBase
+module Types = Corabase__CoraBaseType
 module Json = Corabase__CoraJson
 module Compare = Corabase__CoraCompare

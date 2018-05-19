@@ -1,4 +1,4 @@
-open CoraBase
+open CoraBaseType
 
 val cora_of_json: string -> cora
 

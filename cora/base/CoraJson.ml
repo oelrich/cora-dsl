@@ -1,6 +1,6 @@
 open Cora_j
 open Cora_t
-open CoraBase
+open CoraBaseType
 
 let check_cora_attributes = function
     | None -> None

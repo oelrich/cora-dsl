@@ -1,4 +1,4 @@
-open CoraBase
+open CoraBaseType
 
 
 val compare_list_option: ('a -> 'a -> int) -> 'a list option -> 'a list option -> int
