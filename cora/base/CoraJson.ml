@@ -51,14 +51,16 @@ let rec cora_to_unchecked = function
            children = uc_children;
            attributes = uc_attributes } : Cora_t.cora_unchecked)
 
+
+
 let cora_of_json (file:string) =
-    Ag_util.Json.from_file
+    Atdgen_runtime.Util.Json.from_file
         Cora_j.read_cora_unchecked
         file
     |> cora_of_unchecked
 
 let cora_to_json (c: cora) (file:string) =
-    Ag_util.Json.to_file
+    Atdgen_runtime.Util.Json.to_file
         Cora_j.write_cora_unchecked
         file
         (cora_to_unchecked c)
