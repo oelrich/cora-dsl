@@ -102,10 +102,12 @@ let compare_name (ln: name) (rn: name) =
         | Some(lrid), Some(rrid) ->
             String.compare lrid rrid
 
-let%test "compare_name N <" =
+let%expect_test "compare_name N <" =
     let ln = ({name = "a"; repeat_id =  None } : name) in
     let rn = ({name = "a"; repeat_id =  Some("1") } : name) in
-    (compare_name ln rn) < 0
+    print_endline (Printf.sprintf ("%d") (compare_name ln rn));
+  [%expect {| -1 |}]
+
 
 let%test "compare_name N >" =
     let ln = ({name = "a"; repeat_id =  Some("1") } : name) in
