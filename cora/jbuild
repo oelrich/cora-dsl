@@ -3,6 +3,6 @@
 (library
  ((name cora)
   (libraries (str core corabase))
-  (preprocess (pps (ppx_jane ppx_expect ppx_driver.runner)))
+  (preprocess (pps (ppx_jane ppx_expect ppxlib)))
   (inline_tests)
  ))
