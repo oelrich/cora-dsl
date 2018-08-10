@@ -1,6 +1,5 @@
 open Corabase.Types
 open Corabase.Json
-open Corabase.Compare
 
 module StringMap = Map.Make(String)
 
@@ -58,7 +57,7 @@ let rec count_names (c:cora) (names: string_counter) =
 let summarise_names coras =
     summarise coras count_names StringMap.empty
 
-let rec count_attributes (c:cora) (attribute_counts: string_counter) =
+let count_attributes (c:cora) (attribute_counts: string_counter) =
     match c with
     | Atomic(_, _) ->
         attribute_counts
@@ -174,13 +173,13 @@ let find_attribute_key_flat (sp: search_pattern) (c: cora) =
     else
         None
 
-let rec find_attribute_key (sp: search_pattern) (c: cora) =
+let find_attribute_key (sp: search_pattern) (c: cora) =
     find_rec find_attribute_key_flat sp c
  
 let find_attribute_value_flat (sp: search_pattern) (c: cora) =
     match c with
     | Atomic(_,_) -> None
-    | Group(_, {attributes = attributes; children = children}) ->
+    | Group(_, {attributes = attributes; children = _children}) ->
         match attributes with
         | Some(attributelist) ->
             if List.exists (fun {key = _; value = v} -> hit sp v) attributelist then
@@ -190,14 +189,14 @@ let find_attribute_value_flat (sp: search_pattern) (c: cora) =
         | None -> None
 
 
-let rec find_attribute_value (sp: search_pattern) (c: cora) =
+let find_attribute_value (sp: search_pattern) (c: cora) =
     find_rec find_attribute_value_flat sp c
 
 let find_value_flat (sp: search_pattern) (c: cora) =
     match c with
     | Atomic(_, value) ->
         if hit sp value.value then Some(c) else None
-    | Group(_, group) ->
+    | Group(_, _group) ->
         None
 
 let rec find_value (sp: search_pattern) (c: cora) =
@@ -254,9 +253,9 @@ let rec find_record (t:string) (a:string*string) (n:string) = function
             (if match_record t a n c then [c] else [])
             (find_record t a n cl)
     | [] -> []
-and match_record (t:string) ((k,v):string*string) (n:string)  = function
-    | Group({name=t; _},
-            {attributes=record_attributes; children = kids}) ->
+and match_record (_t:string) ((_k,_v):string*string) (n:string)  = function
+    | Group({name=_t; _},
+            {attributes=_record_attributes; children = kids}) ->
         List.exists (match_record_info n) kids
     | _ -> false
 

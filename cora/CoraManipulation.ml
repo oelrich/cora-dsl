@@ -1,12 +1,12 @@
 open Corabase.Types
 
 let get_children = function
-    | Group(_, {children = kids}) -> kids
+    | Group(_, {children = kids; _}) -> kids
     | _ -> []
 
 let get_type_name = function
-    | Atomic({name = type_name}, _)
-    | Group({name = type_name}, _) -> type_name
+    | Atomic({name = type_name; _}, _)
+    | Group({name = type_name; _}, _) -> type_name
 
 let rec flat_find_all_of_type type_name = function
     | c :: rest ->
@@ -28,12 +28,12 @@ let get_value = function
     | _ -> failwith "no value in this data"
 
 let is_atomic_type type_name = function
-    | Atomic({name = type_name'}, _)->
+    | Atomic({name = type_name'; _}, _)->
         String.equal type_name type_name'
     | _ -> false
 
 let is_group_type type_name = function
-    | Group({name = type_name'}, _) ->
+    | Group({name = type_name'; _}, _) ->
         String.equal type_name type_name'
     | _ -> false
 
@@ -68,11 +68,11 @@ let get_record_id (c: cora) =
         "no record info available"
 
 let is_data_divider = function
-    | Group({name="dataDivider"}, _) -> true
+    | Group({name="dataDivider"; _}, _) -> true
     | _ -> false
 
 let get_system_id = function
-    | Group({name = "dataDivider"}, {children = kids}) ->
+    | Group({name = "dataDivider"; _}, {children = kids; _}) ->
         let system = List.find (is_atomic_type "linkedRecordId") kids
                      |> get_value in 
         Some(system)
@@ -94,7 +94,7 @@ let get_record_identifier (c:cora) =
     get_system c, get_type_name c, get_record_id c
 
 let is_link = function
-    | Group(_ , {children = kids}) ->
+    | Group(_ , {children = kids; _}) ->
         let linkType =
                 flat_find_all_of_type "linkedRecordType" kids
                 |> List.length in
@@ -107,7 +107,7 @@ let is_link = function
     |_ -> false
 
 let get_link = function
-    | Group({name = link_name} , {children = kids}) ->
+    | Group({name = link_name; _} , {children = kids; _}) ->
         let link_type =
                 flat_find_all_of_type "linkedRecordType" kids
                 |> List.hd |> get_value in

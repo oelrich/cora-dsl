@@ -1,5 +1,4 @@
-open CoraJson
-open CoraCompare
+
 
 let%test "compare =" =
     let base_file = "./test_data/test.json" in

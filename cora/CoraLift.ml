@@ -1,6 +1,4 @@
 open Corabase.Types
-open CoraTypes
-
 let rec list_contains_atom n v = function
     | (Atomic({name=n'; _}, {value = v'}):cora):: _ ->
         n = n' && v = v'
@@ -10,7 +8,7 @@ let rec list_contains_atom n v = function
         false
 
 let match_record_info (id: string) = function
-    | (Group({name="recordInfo";_}, {children = kids; _}):cora) ->
+    | (Group({name="recordInfo"; _}, {children = kids; _}):cora) ->
         list_contains_atom "id" id kids
     | _ -> false
 
@@ -21,7 +19,7 @@ let rec find_record (t:string) (n:string) = function
     | [] -> []
 and match_record (t:string) (n:string)  = function
     | (Group({name       = nt; _},
-             {attributes = record_attributes;
+             {attributes = _record_attributes;
               children   = kids}):cora) when
                 (String.equal t nt) ->
         List.exists (match_record_info n) kids

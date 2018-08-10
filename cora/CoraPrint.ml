@@ -96,7 +96,7 @@ let rec print_mix indent (cm: mix_cora) =
     | Pure(cs) ->
         print_cora_construct indent cs;
         print_newline ()
-    | Group(name, cs, {attributes = attribs; children = kids}) ->
+    | Group(name, _cs, {attributes = attribs; children = kids}) ->
         print_indent indent;
         print_string "> ";
         print_cora_name name;

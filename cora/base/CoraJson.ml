@@ -1,4 +1,3 @@
-open Cora_j
 open Cora_t
 open CoraBaseType
 

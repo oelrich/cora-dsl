@@ -10,9 +10,9 @@ let add_to_node item tree =
     |Root(trees, data) -> Root(trees, item :: data)
     |Tree(c,trees, data) -> Tree(c, trees, item :: data)
 
-let rec add_branch c item tree =
+let add_branch _c _item tree =
     match tree with
-    | Tree(d, trees, _) -> tree 
+    | Tree(_d, _trees, _) -> tree 
     | _ -> tree
 
 let add c item tree =

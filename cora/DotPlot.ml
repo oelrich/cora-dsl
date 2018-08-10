@@ -1,9 +1,12 @@
+(*
 open Corabase.Types
 open CoraManipulation
 
-
 let get_nodes (node, links) =
     node :: List.map (fun (_, ))
+    
+*)
+
 
 
 
@@ -35,6 +38,9 @@ module NodeSet = Set.Make(Record)
 
 let cora_root = "recordType", "recordType"
 
+let get_linking _node = []
+let find _node _world = ()
+(*
 let rec get_graph
         ((edges: NamedEdgeSet.t),
         (finished: NodeSet.t),
@@ -51,7 +57,7 @@ and visit
         (world: cora list) =
     let linked_nodes = get_linking (find node world) in
     let new_edges =
-        List.fold_left (fun s (name, target) ->
+        List.fold_left (fun s (name:string, target:Record.t) ->
             NamedEdgeSet.add (name, node, target) s
             ) edges linked_nodes
         in
@@ -67,7 +73,5 @@ and visit
         in
     new_edges, new_finished, new_fringe
 
-
-let graph_info (edges: NamedEdgeSet.t) = ()
-
-
+*)
+let graph_info (_edges: NamedEdgeSet.t) = ()

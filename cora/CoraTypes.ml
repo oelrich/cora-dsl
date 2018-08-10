@@ -99,9 +99,9 @@ let rec de_opt_list = function
 
 
 let extract_write_stamp
-        (u: ([> `Updated | `Created ] * cora_user) option)
-        (t: ([> `Updated | `Created ] * Core.Time.t) option)
-        (cl: cora list) (rem: cora list) =
+        (_u: ([> `Updated | `Created ] * cora_user) option)
+        (_t: ([> `Updated | `Created ] * Core.Time.t) option)
+        (cl: cora list) (_rem: cora list) =
     let times = List.map get_timestamp cl |> de_opt_list in
     let users = List.map get_editor cl |> de_opt_list in
     if (List.length times) = (List.length users) then
@@ -120,15 +120,15 @@ let extract_write_stamp
     |_ -> None, (List.append cl rem)
 *)
 
-let rec extract_record_type_entries (cl: cora list) (ri: cora_record_info) =
+let extract_record_type_entries (cl: cora list) (ri: cora_record_info) =
     match cl with
     | [] -> ri
-    | el::rest ->ri
+    | _el::_rest ->ri
 
 let extract_record_type (c:cora) =
     match c with
     | Group({name = "recordType"; repeat_id = None},
-            {attributes = None; children = kids}) ->
+            {attributes = None; children = _kids}) ->
 
                 None
     | _ -> None
@@ -137,7 +137,7 @@ let extract_record_type (c:cora) =
 
 let lift_record_type (cm: mix_cora) =
     match cm with
-    | Group(name, cs, group) -> cm
+    | Group(_name, _cs, _group) -> cm
     | _ -> cm
 
 let lift (cm: mix_cora) =

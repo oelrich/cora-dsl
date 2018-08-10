@@ -1,6 +1,4 @@
 open Corabase.Types
-open CoraTypes
-
 (*
     name
         recordInfo
@@ -10,12 +8,12 @@ open CoraTypes
 
 let rec list_contains_data_divider (sys:string) (cl : cora list) =
     match cl with
-    | Group({name="dataDivider"},{children=[
-            Atomic({name="linkedRecordType"},{value="system"});
-            Atomic({name="linkedRecordId"},{value=system})]}) :: rest
-    | Group({name="dataDivider"},{children=[
-            Atomic({name="linkedRecordId"},{value=system});
-            Atomic({name="linkedRecordType"},{value="system"})]}) :: rest ->
+    | Group({name="dataDivider"; _},{children=[
+            Atomic({name="linkedRecordType"; _},{value="system"});
+            Atomic({name="linkedRecordId"; _},{value=system})]; _}) :: _rest
+    | Group({name="dataDivider"; _},{children=[
+            Atomic({name="linkedRecordId"; _},{value=system});
+            Atomic({name="linkedRecordType"; _},{value="system"})]; _}) :: _rest ->
         (String.equal system sys)
     | _ :: rest -> list_contains_data_divider sys rest
     | [] -> false
@@ -40,7 +38,7 @@ let rec find_record (s: string) (t:string) (n:string) = function
             (find_record s t n cl)
     | [] -> []
 and match_record (sys:string) (ty:string) (id:string)  = function
-    | (Group({name=nt; _},{children = kids}):cora) ->
+    | (Group({name=nt; _},{children = kids; _}):cora) ->
         (String.equal nt ty) &&
         (List.exists (match_record_info sys id) kids)
     | _ -> false
@@ -53,7 +51,7 @@ let find ((s,t,n): string * string * string) coras =
     | c -> failwith (Printf.sprintf ("Found alarmingly many (%d) of %s: %s") c t n)
 
 let rec find_id : cora list -> string option = function
-    | Atomic({name = "id"}, {value = id}) :: rest -> Some(id)
+    | Atomic({name = "id"; _}, {value = id}) :: _rest -> Some(id)
     | _ :: rest -> find_id rest
     | [] -> None
 
@@ -117,25 +115,25 @@ let rec get_atom n = function
     | [] -> None
 
 let get_link : cora -> (string * (string * string)) option = function
-    | Group({name=name},{children=[
-            Atomic({name="linkedRecordType"},{value=target});
-            Atomic({name="linkedRecordId"},{value=id})]})
-    | Group({name=name},{children=[
-            Atomic({name="linkedRecordId"},{value=id});
-            Atomic({name="linkedRecordType"},{value=target})]}) ->
+    | Group({name=name; _},{children=[
+            Atomic({name="linkedRecordType"; _},{value=target});
+            Atomic({name="linkedRecordId"; _},{value=id})]; _})
+    | Group({name=name; _},{children=[
+            Atomic({name="linkedRecordId"; _},{value=id});
+            Atomic({name="linkedRecordType"; _},{value=target})]; _}) ->
         Some(name, (target, id))
     |_ -> None
 
 let rec get_system (c:cora) =
     match c with
-    | Group({name="dataDivider"},{children=[
-            Atomic({name="linkedRecordType"},{value="system"});
-            Atomic({name="linkedRecordId"},{value=system})]})
-    | Group({name="dataDivider"},{children=[
-            Atomic({name="linkedRecordId"},{value=system});
-            Atomic({name="linkedRecordType"},{value="system"})]}) ->
+    | Group({name="dataDivider"; _},{children=[
+            Atomic({name="linkedRecordType"; _},{value="system"});
+            Atomic({name="linkedRecordId"; _},{value=system})]; _})
+    | Group({name="dataDivider"; _},{children=[
+            Atomic({name="linkedRecordId"; _},{value=system});
+            Atomic({name="linkedRecordType"; _},{value="system"})]; _}) ->
         Some(system)
-    | Group(_,{children=kids}) ->
+    | Group(_,{children=kids; _}) ->
         let rec ff elms =
             (match elms with
             | [] -> None
@@ -150,7 +148,7 @@ let rec get_system (c:cora) =
 let rec get_links (c : cora) =
     match c with
     | Atomic(_,_) -> []
-    | Group(_,{children = kids}) ->
+    | Group(_,{children = kids; _}) ->
         (get_link c) :: List.concat(List.map get_links kids)
 
 let rec clean_list_of_opt = function
@@ -199,7 +197,7 @@ and visit
     new_edges, new_finished, new_fringe
 
 
-let graph_info (edges: NamedEdgeSet.t) = ()
+let graph_info (_edges: NamedEdgeSet.t) = ()
 
 
 
